@@ -18,6 +18,11 @@ The objective is for each client to find the treasure and the enemy castle. The 
 - A total of 10 minutes playing time
 - The client cannot request the game state too quickly, else it looses.
 
+**Server communication**
+
+Since the server is provided by the uni and not implemented locally, the game cannot be run without the server.
+Implementing the server functionallity locally is still a work in progress.
+
 **Git**
 
 I programmed the game on a seperate account, but moved it here to make it public. Because of this, there are not past commits of the developement.
