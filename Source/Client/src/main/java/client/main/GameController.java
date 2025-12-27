@@ -3,7 +3,6 @@ package client.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.cli.CliModel;
 import client.map.MapHalfSendingService;
 import client.movement.StrategySwitcher;
 import client.network.Network;
@@ -24,9 +23,9 @@ public class GameController {
 	private Network network;
 	private boolean finished = false;
 	private boolean sentMap;
-	private GameStateManager gameStateManager;
+	private GameModel gameStateManager;
 	private boolean treasureCollected = false;
-	private CliModel model;
+	private UtilityModel model;
 
 
 	/**
@@ -36,7 +35,7 @@ public class GameController {
 	 * 
 	 * @param network
 	 */
-	public GameController(Network network, GameStateManager gameStateManager, CliModel model) {
+	public GameController(Network network, GameModel gameStateManager, UtilityModel model) {
 		this.network = network;
 		this.gameStateManager = gameStateManager;
 		this.model = model;
@@ -56,6 +55,7 @@ public class GameController {
 			logger.info("Updated my player state");
 			
 			MyPlayerState myPlayerState = gameStateManager.getMyPlayerState();
+			
 			if (!treasureCollected && myPlayerState.hasTreasure()) {
 				model.setTreasureCollected();
 				treasureCollected = true;

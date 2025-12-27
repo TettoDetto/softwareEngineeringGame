@@ -3,7 +3,6 @@ package client.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.cli.CliModel;
 import client.cli.CliView;
 import client.network.Network;
 
@@ -29,8 +28,8 @@ public class MainClient {
 			Network currentNetwork = new Network(args[1], args[2]);
 			currentNetwork.registerPlayer(firstName, lastName, uName);
 			
-			GameStateManager gameStateManager = new GameStateManager(currentNetwork);
-			CliModel model = new CliModel();
+			GameModel gameStateManager = new GameModel(currentNetwork);
+			UtilityModel model = new UtilityModel();
 			CliView view = new CliView();
 			gameStateManager.addPropertyChangeListener(view);
 			model.addPropertyChangeListener(view);

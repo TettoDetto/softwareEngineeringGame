@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import client.map.TerrainMap;
+import client.movement.model.MapLayout;
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromserver.FullMapNode;
 
@@ -14,8 +15,8 @@ public class ProbabilityMap {
 
 	private final static Logger logger = LoggerFactory.getLogger(ProbabilityMap.class);
 
-	private final double pTreasure[][];
-	private final double pFort[][];
+	private double pTreasure[][];
+	private double pFort[][];
 	private final int WIDTH;
 	private final int HEIGHT;
 	private TerrainMap map;
@@ -30,17 +31,37 @@ public class ProbabilityMap {
 	 * @param ownHalf A test, to check if any point is in the clients own half or not
 	 * @param enemyHalf A test, to check if any point is in the clients enemy half or not
 	 */
-	public ProbabilityMap(TerrainMap map, Predicate<Point> ownHalf, Predicate<Point> enemyHalf) {
+	public ProbabilityMap(TerrainMap map) {
+		
 		this.map = map;
 		this.WIDTH = map.getXDimension();
 		logger.info("WIDTH is: {}", WIDTH);
+		
 		this.HEIGHT = map.getYDimension();
 		logger.info("HEIGHT is: {}", HEIGHT);
+		
+		boolean splitVertically;
+		if (map.getXDimension() > map.getYDimension()) {
+			splitVertically = true;
+		} else {
+			splitVertically = false;
+		}
+
+		Predicate<Point> ownHalf = p -> splitVertically ? p.x < map.getXDimension() / 2
+				: p.y < map.getYDimension() / 2;
+		
+		Predicate<Point> enemyHalf = ownHalf.negate();
+		
 		this.ownHalf = ownHalf;
 		this.enemyHalf = enemyHalf;
+		
+		initializeProbabilties();
+	}
 
-		pTreasure = new double[map.getXDimension()][map.getYDimension()];
-		pFort = new double[map.getXDimension()][map.getYDimension()];
+	private void initializeProbabilties() {
+		
+		this.pTreasure = new double[map.getXDimension()][map.getYDimension()];
+		this.pFort = new double[map.getXDimension()][map.getYDimension()];
 
 		int treasureCount = 0;
 		int fortCount = 0;
@@ -74,7 +95,7 @@ public class ProbabilityMap {
 				}
 			}
 		}
-
+		
 	}
 
 	public double getTreasureProbability(Point point) {
