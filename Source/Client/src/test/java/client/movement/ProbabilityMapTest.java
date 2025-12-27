@@ -48,7 +48,7 @@ public class ProbabilityMapTest {
 		ownHalf = p -> p.x < WIDTH / 2;
 		enemyHalf = ownHalf.negate();
 
-		probMap = new ProbabilityMap(map, ownHalf, enemyHalf);
+		probMap = new ProbabilityMap(map);
 	}
 
 	@Test

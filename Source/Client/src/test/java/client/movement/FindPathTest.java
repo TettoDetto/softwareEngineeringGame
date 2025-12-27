@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -38,17 +37,7 @@ public class FindPathTest {
 	void setUpTerrainMap() {
 		this.map = generateTerrainMap();
 
-		boolean splitVertically;
-		if (map.getXDimension() > map.getYDimension()) {
-			splitVertically = true;
-		} else {
-			splitVertically = false;
-		}
-
-		Predicate<Point> ownHalf = p -> splitVertically ? p.x < map.getXDimension() / 2 : p.y < map.getYDimension() / 2;
-		Predicate<Point> enemyHalf = ownHalf.negate();
-
-		this.probMap = new ProbabilityMap(map, ownHalf, enemyHalf);
+		this.probMap = new ProbabilityMap(map);
 		movementContext.setDiscovered(discovered);
 		movementContext.setTerrainMap(map);
 		movementContext.setProbabilityMap(probMap);
@@ -57,17 +46,8 @@ public class FindPathTest {
 	void setUpSimpleTerrainMap() {
 		this.map = generateSimpleTerrainMap();
 
-		boolean splitVertically;
-		if (map.getXDimension() > map.getYDimension()) {
-			splitVertically = true;
-		} else {
-			splitVertically = false;
-		}
 
-		Predicate<Point> ownHalf = p -> splitVertically ? p.x < map.getXDimension() / 2 : p.y < map.getYDimension() / 2;
-		Predicate<Point> enemyHalf = ownHalf.negate();
-
-		this.probMap = new ProbabilityMap(map, ownHalf, enemyHalf);
+		this.probMap = new ProbabilityMap(map);
 		movementContext.setDiscovered(discovered);
 		movementContext.setTerrainMap(map);
 		movementContext.setProbabilityMap(probMap);

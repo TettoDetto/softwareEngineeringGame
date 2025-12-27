@@ -73,18 +73,6 @@ public class GameModel {
 		movementContext.setHasTreasure(myPlayerState.hasTreasure());
 	}
 	
-	public IMovementContext getMovementContext() {
-		return movementContext;
-	}
-	
-	public TerrainMap getTerrainMap() {
-		return terrainMap;
-	}
-	
-	public GameState getGameState() {
-		return gameState;
-	}
-	
 	/**
 	 * 
 	 * Initializes the ProbabilityMap once and passes it to movementContext
@@ -95,10 +83,6 @@ public class GameModel {
 		movementContext.setProbabilityMap(probMap);
 	}
 	
-	public MyPlayerState getMyPlayerState() {
-		return myPlayerState;
-	}
-	
 	/**
 	 * 
 	 * Generates a new instance of FindPath to be used during the whole game
@@ -107,9 +91,25 @@ public class GameModel {
 	public void initialiseFindPath() {
 		this.findPath = new FindPath(movementContext);
 	}
+	
+	public MyPlayerState getMyPlayerState() {
+		return myPlayerState;
+	}
 
 	public FindPath getFindPath() {
 		return findPath;
+	}
+	
+	public IMovementContext getMovementContext() {
+		return movementContext;
+	}
+	
+	public TerrainMap getTerrainMap() {
+		return terrainMap;
+	}
+	
+	public GameState getGameState() {
+		return gameState;
 	}
 	
 	

@@ -3,10 +3,8 @@ package client.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.map.MapHalfSendingService;
-import client.movement.StrategySwitcher;
-import client.network.Network;
-import client.network.data.PlayerMoveRequest;
+import client.map.MapHalfService;
+import client.movement.MovementService;
 import client.utility.MyPlayerState;
 import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.EPlayerGameState;
@@ -20,13 +18,13 @@ public class GameController {
 
 	private int loopCount = 0;
 	
-	private Network network;
 	private boolean finished = false;
 	private boolean sentMap;
-	private GameModel gameStateManager;
+	private GameModel gameModel;
 	private boolean treasureCollected = false;
-	private UtilityModel model;
-
+	private UtilityModel utilityModel;
+	private MovementService movementService;
+	private MapHalfService mapHalfSerivce;
 
 	/**
 	 * 
@@ -35,10 +33,11 @@ public class GameController {
 	 * 
 	 * @param network
 	 */
-	public GameController(Network network, GameModel gameStateManager, UtilityModel model) {
-		this.network = network;
-		this.gameStateManager = gameStateManager;
-		this.model = model;
+	public GameController(GameModel gameModel, UtilityModel utilityModel, MovementService movementService, MapHalfService mapHalfSerivce) {
+		this.gameModel = gameModel;
+		this.utilityModel = utilityModel;		
+		this.movementService = movementService;
+		this.mapHalfSerivce = mapHalfSerivce;
 	}
 
 	/**
@@ -51,13 +50,13 @@ public class GameController {
 	public void executeGame() {
 		try {
 			Thread.sleep(SLEEP_TIME);
-			gameStateManager.update();
+			gameModel.update();
 			logger.info("Updated my player state");
 			
-			MyPlayerState myPlayerState = gameStateManager.getMyPlayerState();
+			MyPlayerState myPlayerState = gameModel.getMyPlayerState();
 			
 			if (!treasureCollected && myPlayerState.hasTreasure()) {
-				model.setTreasureCollected();
+				utilityModel.setTreasureCollected();
 				treasureCollected = true;
 			}
 
@@ -95,7 +94,7 @@ public class GameController {
 	 * @throws InterruptedException
 	 */
 	private void handleWaiting() throws InterruptedException {
-		model.setWaiting(EPlayerGameState.MustWait);
+		utilityModel.setWaiting(EPlayerGameState.MustWait);
 	}
 
 	/**
@@ -116,14 +115,14 @@ public class GameController {
 		} else {
 			
 			if (loopCount == 0) {
-				gameStateManager.initializeProbabilityMap();
-				gameStateManager.initialiseFindPath();
+				gameModel.initializeProbabilityMap();
+				gameModel.initialiseFindPath();
 			}
 			
 			logger.info("Preparing path finding");
 			
 			//Need to update the terrain map each turn, since the client else moves towards water
-			gameStateManager.getFindPath().updateTerrainMap(gameStateManager.getTerrainMap());
+			gameModel.getFindPath().updateTerrainMap(gameModel.getTerrainMap());
 			sendMove();
 
 			loopCount++;
@@ -135,7 +134,7 @@ public class GameController {
 	 * Presents loss via model and view
 	 */
 	private void presentLoss() {
-		model.setLost(false, loopCount, gameStateManager.getMyPlayerState().hasTreasure());
+		utilityModel.setLost(false, loopCount, gameModel.getMyPlayerState().hasTreasure());
 		this.finished = true;
 	}
 
@@ -143,7 +142,7 @@ public class GameController {
 	 * Presents win via model and view
 	 */
 	private void presentWin() {
-		model.setWon(true, loopCount, gameStateManager.getMyPlayerState().hasTreasure());
+		utilityModel.setWon(true, loopCount, gameModel.getMyPlayerState().hasTreasure());
 		this.finished = true;
 	}
 
@@ -154,15 +153,10 @@ public class GameController {
 	 */
 	private void sendMove() {
 		logger.info("The AI will now determine which moves to make to win this game.");
-		
-		EMove move = new StrategySwitcher().getMove(gameStateManager.getMovementContext(), gameStateManager.getFindPath());
-		
-		if (move != null) {
-			logger.info("Moving towards: " + move);
-			
-			network.sendPlayerMove(new PlayerMoveRequest(gameStateManager.getMyPlayerState().getPlayerId(), move));
-		}
-		model.setMove(move);
+	
+		this.movementService.calculateAndSendMove(gameModel.getMovementContext(), gameModel.getFindPath());
+		EMove move = movementService.getLastMove();
+		utilityModel.setMove(move);
 		
 	}
 
@@ -172,20 +166,18 @@ public class GameController {
 	private void sendHalfMap() {
 		logger.info("We will now begin by creating a new map...");
 		
-		model.setMapCreation();
+		utilityModel.setMapCreation();
 		
-		MapHalfSendingService halfMapSendingService = new MapHalfSendingService(
-				network, 
-				gameStateManager.getGameState().getMap(),
+		this.mapHalfSerivce.generateAndSendMap(
+				gameModel.getGameState().getMap(),
 				result -> {
 					if (!result.getIsValidMap()) {
-						model.setMapValidationError(result.getResult());
+						utilityModel.setMapValidationError(result.getResult());
 					}
 				}
 		);
 		
-		halfMapSendingService.generateAndSendMap();
-		model.setSentMap(true);
+		utilityModel.setSentMap(true);
 	}
 
 	public boolean getFinished() {

@@ -8,14 +8,14 @@ import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.map.MapHalfSendingService;
+import client.map.MapHalfService;
 import client.map.NeighborsOfMapNode;
 import client.map.placers.MapNode;
 import client.movement.model.ValidateCoordinate;
 import messagesbase.messagesfromclient.ETerrain;
 
 public class MapValidator {
-	final Logger logger = LoggerFactory.getLogger(MapHalfSendingService.class);
+	final Logger logger = LoggerFactory.getLogger(MapHalfService.class);
 	private MapNode[][] map;
 	private int WIDTH = 0;
 	private int HEIGHT = 0;

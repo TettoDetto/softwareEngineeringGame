@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import client.cli.CliView;
+import client.map.MapHalfService;
+import client.movement.MovementService;
 import client.network.Network;
 
 public class MainClient {
@@ -31,10 +33,15 @@ public class MainClient {
 			GameModel gameStateManager = new GameModel(currentNetwork);
 			UtilityModel model = new UtilityModel();
 			CliView view = new CliView();
+			
 			gameStateManager.addPropertyChangeListener(view);
 			model.addPropertyChangeListener(view);
 			
-			GameController loop = new GameController(currentNetwork, gameStateManager, model);
+			MovementService movementService = new MovementService(currentNetwork, currentNetwork.getPlayerId().getUniquePlayerID());
+			
+			MapHalfService mapHalfService = new MapHalfService(currentNetwork);
+			
+			GameController loop = new GameController(gameStateManager, model, movementService, mapHalfService);
 	
 			while (!loop.getFinished()) {
 				logger.info("Starting new game loop");
