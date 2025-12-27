@@ -7,5 +7,5 @@ import messagesbase.messagesfromserver.FullMap;
 
 public interface IMapHalfService {
 
-	void generateAndSendMap(FullMap fullMap, Consumer<ValidationResult> onValidationResult);
+	void executeMapService(FullMap fullMap, Consumer<ValidationResult> onValidationResult);
 }

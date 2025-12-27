@@ -24,7 +24,7 @@ public class GameController {
 	private boolean treasureCollected = false;
 	private UtilityModel utilityModel;
 	private MovementService movementService;
-	private MapHalfService mapHalfSerivce;
+	private MapHalfService mapHalfService;
 
 	/**
 	 * 
@@ -33,11 +33,11 @@ public class GameController {
 	 * 
 	 * @param network
 	 */
-	public GameController(GameModel gameModel, UtilityModel utilityModel, MovementService movementService, MapHalfService mapHalfSerivce) {
+	public GameController(GameModel gameModel, UtilityModel utilityModel, MovementService movementService, MapHalfService mapHalfService) {
 		this.gameModel = gameModel;
 		this.utilityModel = utilityModel;		
 		this.movementService = movementService;
-		this.mapHalfSerivce = mapHalfSerivce;
+		this.mapHalfService = mapHalfService;
 	}
 
 	/**
@@ -149,26 +149,26 @@ public class GameController {
 	/**
 	 * Gets the next move from FindPath via getting the movementContext and the permanent 
 	 * find path instance held in the gameStateManager
-	 * Sends the next move over the network
+	 * Calls {@link MovementService} to manage the next move and send it.
 	 */
 	private void sendMove() {
 		logger.info("The AI will now determine which moves to make to win this game.");
 	
-		this.movementService.calculateAndSendMove(gameModel.getMovementContext(), gameModel.getFindPath());
+		this.movementService.executeMovementService(gameModel.getMovementContext(), gameModel.getFindPath());
 		EMove move = movementService.getLastMove();
 		utilityModel.setMove(move);
 		
 	}
 
 	/**
-	 * Calls MainHalfMapSending that sends the HalfMap
+	 * Calls MapHalfService that sends the HalfMap
 	 */
 	private void sendHalfMap() {
 		logger.info("We will now begin by creating a new map...");
 		
 		utilityModel.setMapCreation();
 		
-		this.mapHalfSerivce.generateAndSendMap(
+		this.mapHalfService.executeMapService(
 				gameModel.getGameState().getMap(),
 				result -> {
 					if (!result.getIsValidMap()) {

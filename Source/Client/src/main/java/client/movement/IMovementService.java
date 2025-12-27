@@ -5,7 +5,7 @@ import messagesbase.messagesfromclient.EMove;
 
 public interface IMovementService {
 
-	void calculateAndSendMove(IMovementContext movementContext, FindPath findPath);
+	void executeMovementService(IMovementContext movementContext, FindPath findPath);
 	EMove getLastMove();
 	
 }

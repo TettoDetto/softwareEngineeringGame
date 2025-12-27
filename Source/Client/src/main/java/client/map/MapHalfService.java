@@ -28,13 +28,13 @@ public class MapHalfService implements IMapHalfService {
 	}
 	
 	@Override
-	public void generateAndSendMap(FullMap fullMap, Consumer<ValidationResult> onValidationResult) {
+	public void executeMapService(FullMap fullMap, Consumer<ValidationResult> onValidationResult) {
 		this.fullMap = fullMap;
 		
 		for (int i = 0; i < MAX_ATTEMPTS; i++) {
 			
 			MapNode[][] mapHalf = generateMapHalf();
-			ValidationResult result = validateAndSend(mapHalf);
+			ValidationResult result = validateMap(mapHalf);
 			
 			if (onValidationResult != null) {
 				onValidationResult.accept(result);
@@ -76,17 +76,19 @@ public class MapHalfService implements IMapHalfService {
 	 * @param mapHalf The generated MapHalf
 	 * @return The {@link ValidationResult}
 	 */
-	private ValidationResult validateAndSend(MapNode[][] mapHalf) {
+	private ValidationResult validateMap(MapNode[][] mapHalf) {
 		
 		MapValidator validator = new MapValidator(mapHalf);
 		ValidationResult result = validator.isValidMap();
 		
 		if (result.getIsValidMap()) {
-			currentNetwork.sendMapHalf(mapHalf);
+			sendMap(mapHalf);
 		}
-
-		
 		return result;
+	}
+	
+	private void sendMap(MapNode[][] mapHalf) {
+		currentNetwork.sendMapHalf(mapHalf);
 	}
 	
 }

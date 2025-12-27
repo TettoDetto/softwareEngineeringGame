@@ -31,7 +31,7 @@ public class MovementService implements IMovementService{
 	 * @return The next valid move
 	 */
 	@Override
-	public void calculateAndSendMove(IMovementContext movementContext, FindPath findPath) {
+	public void executeMovementService(IMovementContext movementContext, FindPath findPath) {
 
 		logger.info("It is your players turn to make a move ... where will he go? 🧐");
 
