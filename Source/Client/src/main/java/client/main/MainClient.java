@@ -3,7 +3,7 @@ package client.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.cli.CliView;
+import client.cli.View;
 import client.map.MapHalfService;
 import client.movement.MovementService;
 import client.network.Network;
@@ -32,7 +32,7 @@ public class MainClient {
 			
 			GameModel gameStateManager = new GameModel(currentNetwork);
 			UtilityModel model = new UtilityModel();
-			CliView view = new CliView();
+			View view = new View();
 			
 			gameStateManager.addPropertyChangeListener(view);
 			model.addPropertyChangeListener(view);

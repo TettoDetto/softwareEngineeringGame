@@ -8,7 +8,7 @@ import client.utility.events.PropertyChangeEvent;
 import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.GameState;
 
-public class CliView implements IPropertyChangeListener {
+public class View implements IPropertyChangeListener {
 	
 	
 	public void render(GameState gameState) {

@@ -11,12 +11,12 @@ import messagesbase.messagesfromserver.FullMapNode;
 
 public class TargetSearch {
 
-    private static final double VISITEDPENALTY = 70;
+    private static final double VISITEDPENALTY = 100;
 	private static final int NOGAINPENALTY = 500;
-	private static final double DISCOVEREDPENALTY = 100;
+	private static final double DISCOVEREDPENALTY = 500;
 	private final double VISIBILITY_WEIGHT = 10.0;
     private final double PROBABILITY_WEIGHT = 0.0;
-    private final double DISTANCE_WEIGHT = 3.5;
+    private final double DISTANCE_WEIGHT = 5.5;
 	private TerrainMap map;
 	private MapLayout mapLayout;
 	private Set<Point> visited;
