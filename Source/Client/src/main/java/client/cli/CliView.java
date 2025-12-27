@@ -9,13 +9,7 @@ import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.GameState;
 
 public class CliView implements IPropertyChangeListener {
-
-	private CliController cliController;
 	
-	public CliView(CliModel model, CliController cliController) {
-		this.cliController = cliController;
-		model.addPropertyChangeListener(this);
-	}
 	
 	public void render(GameState gameState) {
 		RenderCli.visualizeCli(gameState);

@@ -8,16 +8,14 @@ import client.utility.events.IPropertyChangeListener;
 import client.utility.events.PropertyChangeSupport;
 import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.EPlayerGameState;
-import messagesbase.messagesfromserver.GameState;
 
 public class CliModel {
 
 	private final PropertyChangeSupport changes;
 	private boolean finished = false;
-	private GameState gameState = null;
 	private boolean sentMap;
 	private TerrainMap terrainMap;
-	private boolean treasure;
+	private EPlayerGameState isWaiting = EPlayerGameState.MustAct;
 	
 	public CliModel() {
 		this.changes = new PropertyChangeSupport(this);
@@ -31,18 +29,6 @@ public class CliModel {
 		changes.removePropertyChangeListener(listener);
 	}
 
-	public void updateGameState(GameState gameState) {
-
-		GameState newGameState = gameState;
-		GameState oldGameState = this.gameState;
-		this.gameState = newGameState;
-
-		changes.firePropertyChange(EPropertyChangeEventType.GAME_STATE, oldGameState, newGameState);
-	}
-
-	public GameState getGameState() {
-		return this.gameState;
-	}
 
 	public void setSentMap(boolean value) {
 		boolean newSentMap = value;
@@ -73,24 +59,24 @@ public class CliModel {
 		changes.firePropertyChange(EPropertyChangeEventType.MOVE_CALCULATED, null, move);
 	}
 
-	public void setWaiting(boolean b) {
-		changes.firePropertyChange(EPropertyChangeEventType.WAITING_FOR_OPPONENT, null, EPlayerGameState.MustWait);
-
+	public void setWaiting(EPlayerGameState waiting) {
+		EPlayerGameState before = this.isWaiting;
+		this.isWaiting = waiting;
+		changes.firePropertyChange(EPropertyChangeEventType.WAITING_FOR_OPPONENT, before, waiting);
 	}
 
 	public void setMapCreation() {
-		changes.firePropertyChange(EPropertyChangeEventType.MAP_CREATION_STARTED, null, "");
+		changes.firePropertyChange(EPropertyChangeEventType.MAP_CREATION_STARTED, false, true);
 		
 	}
 
 	public void setGameStart() {
-		changes.firePropertyChange(EPropertyChangeEventType.GAME_STARTED, null, "");
+		changes.firePropertyChange(EPropertyChangeEventType.GAME_STARTED, false, true);
 		
 	}
 
 	public void setTreasureCollected() {
-		this.treasure = true;
-		changes.firePropertyChange(EPropertyChangeEventType.TREASURE_COLLECTED, null, "");
+		changes.firePropertyChange(EPropertyChangeEventType.TREASURE_COLLECTED, false, true);
 		
 	}
 

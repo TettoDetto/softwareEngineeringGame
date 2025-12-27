@@ -11,12 +11,16 @@ import client.movement.model.MovementContext;
 import client.network.Network;
 import client.utility.MyPlayerState;
 import client.utility.PlayerPosition;
+import client.utility.events.EPropertyChangeEventType;
+import client.utility.events.IPropertyChangeListener;
+import client.utility.events.PropertyChangeSupport;
 import client.utility.exceptions.GameStateEmptyException;
 import client.utility.exceptions.NetworkErrorException;
 import messagesbase.messagesfromserver.GameState;
 
 public class GameStateManager {
-
+	
+	private final PropertyChangeSupport changes;
 	private GameState gameState;
 	private TerrainMap terrainMap;
 	private MyPlayerState myPlayerState;
@@ -34,6 +38,15 @@ public class GameStateManager {
 	public GameStateManager(Network network) {
 		this.network = network;
 		this.movementContext = new MovementContext();
+		this.changes = new PropertyChangeSupport(this);
+	}
+	
+	public void addPropertyChangeListener(IPropertyChangeListener listener) {
+		changes.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(IPropertyChangeListener listener) {
+		changes.removePropertyChangeListener(listener);
 	}
 	
 	/**
@@ -43,16 +56,22 @@ public class GameStateManager {
 	 */
 	public void update() {
 		try {
+			GameState oldGameState = this.gameState;
 			this.gameState = network.getGameState();
+			changes.firePropertyChange(EPropertyChangeEventType.GAME_STATE, oldGameState, this.gameState);
+			
 		} catch (NetworkErrorException e) {
 			e.printStackTrace();
 		} catch (GameStateEmptyException e) {
 			e.printStackTrace();
 		}
+		
 		this.terrainMap = new TerrainMap(gameState.getMap().getMapNodes());
+		changes.firePropertyChange(EPropertyChangeEventType.MAP_UPDATED, null, terrainMap);
+		
 		this.myPlayerState = new MyPlayerState(gameState, network.getPlayerId().getUniquePlayerID());
 		
-		movementContext.setPlayerPosition(new PlayerPosition(gameState.getMap()));
+		movementContext.setPlayerPosition(new PlayerPosition(gameState.getMap()));		
 		movementContext.setTerrainMap(terrainMap);
 		movementContext.setHasTreasure(myPlayerState.hasTreasure());
 	}
@@ -106,6 +125,7 @@ public class GameStateManager {
 	public FindPath getFindPath() {
 		return findPath;
 	}
+	
 	
 		
 }

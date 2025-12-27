@@ -3,7 +3,7 @@ package client.main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import client.cli.CliController;
+import client.cli.CliModel;
 import client.map.MapHalfSendingService;
 import client.movement.StrategySwitcher;
 import client.network.Network;
@@ -23,10 +23,10 @@ public class GameController {
 	
 	private Network network;
 	private boolean finished = false;
-	private CliController controller;
 	private boolean sentMap;
 	private GameStateManager gameStateManager;
 	private boolean treasureCollected = false;
+	private CliModel model;
 
 
 	/**
@@ -36,10 +36,10 @@ public class GameController {
 	 * 
 	 * @param network
 	 */
-	public GameController(Network network, CliController controller) {
+	public GameController(Network network, GameStateManager gameStateManager, CliModel model) {
 		this.network = network;
-		this.controller = controller;
-		this.gameStateManager = new GameStateManager(network);
+		this.gameStateManager = gameStateManager;
+		this.model = model;
 	}
 
 	/**
@@ -53,19 +53,11 @@ public class GameController {
 		try {
 			Thread.sleep(SLEEP_TIME);
 			gameStateManager.update();
-			if (loopCount > 0) {
-				controller.updateGameState(gameStateManager.getGameState());
-				logger.info("Updated game state");
-				
-				controller.updateTerrainMap(gameStateManager.getTerrainMap());
-				logger.info("Updated terrain map");
-			}
-			
 			logger.info("Updated my player state");
 			
 			MyPlayerState myPlayerState = gameStateManager.getMyPlayerState();
 			if (!treasureCollected && myPlayerState.hasTreasure()) {
-				controller.handleTresureCollected();
+				model.setTreasureCollected();
 				treasureCollected = true;
 			}
 
@@ -103,7 +95,7 @@ public class GameController {
 	 * @throws InterruptedException
 	 */
 	private void handleWaiting() throws InterruptedException {
-		controller.handleWaiting();
+		model.setWaiting(EPlayerGameState.MustWait);
 	}
 
 	/**
@@ -118,7 +110,6 @@ public class GameController {
 			
 			sendHalfMap();
 			sentMap = true;
-			controller.updateGameState(gameStateManager.getGameState());
 			
 			logger.info("Loop count after sending half map: " + loopCount);
 			
@@ -144,7 +135,7 @@ public class GameController {
 	 * Presents loss via model and view
 	 */
 	private void presentLoss() {
-		controller.handleFinished(false, loopCount, gameStateManager.getMyPlayerState().hasTreasure());
+		model.setLost(false, loopCount, gameStateManager.getMyPlayerState().hasTreasure());
 		this.finished = true;
 	}
 
@@ -152,7 +143,7 @@ public class GameController {
 	 * Presents win via model and view
 	 */
 	private void presentWin() {
-		controller.handleFinished(true, loopCount, gameStateManager.getMyPlayerState().hasTreasure());
+		model.setWon(true, loopCount, gameStateManager.getMyPlayerState().hasTreasure());
 		this.finished = true;
 	}
 
@@ -171,7 +162,7 @@ public class GameController {
 			
 			network.sendPlayerMove(new PlayerMoveRequest(gameStateManager.getMyPlayerState().getPlayerId(), move));
 		}
-		controller.handleMovement(move);
+		model.setMove(move);
 		
 	}
 
@@ -181,23 +172,20 @@ public class GameController {
 	private void sendHalfMap() {
 		logger.info("We will now begin by creating a new map...");
 		
-		controller.handleMapCreationStarted();
+		model.setMapCreation();
 		
 		MapHalfSendingService halfMapSendingService = new MapHalfSendingService(
 				network, 
 				gameStateManager.getGameState().getMap(),
 				result -> {
 					if (!result.getIsValidMap()) {
-						controller.handleMapValidationError(result.getResult());
-					}
-					else {
-						controller.handleMapSending(finished);
+						model.setMapValidationError(result.getResult());
 					}
 				}
 		);
 		
 		halfMapSendingService.generateAndSendMap();
-		controller.handleMapSending(true);
+		model.setSentMap(true);
 	}
 
 	public boolean getFinished() {
