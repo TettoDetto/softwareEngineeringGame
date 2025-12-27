@@ -4,36 +4,41 @@ import java.awt.Point;
 import java.util.Set;
 
 import client.map.TerrainMap;
+import client.movement.model.MapLayout;
+import client.movement.model.ValidateCoordinate;
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromserver.FullMapNode;
 
 public class TargetSearch {
 
-    private static final double VISITEDPENALTY = 30;
+    private static final double VISITEDPENALTY = 70;
 	private static final int NOGAINPENALTY = 500;
-	private final double VISIBILITY_WEIGHT = 3.0;
-    private final double PROBABILITY_WEIGHT = 5.0;
-    private final double DISTANCE_WEIGHT = 2;
+	private static final double DISCOVEREDPENALTY = 100;
+	private final double VISIBILITY_WEIGHT = 10.0;
+    private final double PROBABILITY_WEIGHT = 0.0;
+    private final double DISTANCE_WEIGHT = 3.5;
 	private TerrainMap map;
 	private MapLayout mapLayout;
 	private Set<Point> visited;
+	private Set<Point> discovered;
 	private VisibilityGain visibility;
 	private ProbabilityMap probMap;
 	
 	/**
 	 * 
-	 * Searches for the next best target using weights and the probability gained from the probabilityMap
+	 * Searches for the next best target using weights and the probability gained from the {@link ProbabilityMap}
 	 * 
-	 * @param map Client side presentation of the FullMap
+	 * @param map Client side presentation of the {@link messagesbase.messagesfromserver.FullMap}
 	 * @param mapLayout Condition if the map is combined breadth or length wise
 	 * @param visited Set of already visited nodes. Kept in the movementContext class
 	 * @param visibility Instance of the VisibilityGain class, giving a score to each mountain and how many grass tiles it uncovers
 	 * @param probMap Global instance of the probabilityMap
 	 */
-	public TargetSearch(TerrainMap map, MapLayout mapLayout, Set<Point> visited, VisibilityGain visibility, ProbabilityMap probMap) {
+	public TargetSearch(TerrainMap map, MapLayout mapLayout, Set<Point> visited, Set<Point> discovered, VisibilityGain visibility, ProbabilityMap probMap) {
 		this.map = map;
 		this.mapLayout = mapLayout;
 		this.visited = visited;
+		this.discovered = discovered;
 		this.visibility = visibility;
 		this.probMap = probMap;
 	}
@@ -98,6 +103,10 @@ public class TargetSearch {
         
         if (visited.contains(target)) {
             score -= VISITEDPENALTY;
+        }
+        
+        if (discovered.contains(target)) {
+        	score -= DISCOVEREDPENALTY;
         }
         
 

@@ -1,7 +1,7 @@
 package client.network;
 
-import client.map.MapHalfGenerator;
-import client.utility.PlayerMoveRequest;
+import client.map.placers.MapNode;
+import client.network.data.PlayerMoveRequest;
 import messagesbase.UniquePlayerIdentifier;
 import messagesbase.messagesfromserver.GameState;
 
@@ -13,6 +13,6 @@ public interface INetwork {
 
 	public boolean sendPlayerMove(PlayerMoveRequest move);
 
-	public boolean sendMapHalf(MapHalfGenerator mapHalf);
+	public boolean sendMapHalf(MapNode[][] mapHalf);
 
 }

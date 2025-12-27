@@ -2,7 +2,6 @@ package client.map;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -11,27 +10,37 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import client.map.placers.MapNode;
+import client.map.placers.MountainPlacer;
 import messagesbase.messagesfromclient.ETerrain;
+import messagesbase.messagesfromserver.FullMap;
 
-public class MapHalfGenerator {
+public abstract class MapHalfGenerator {
 
-	private static MapNode[][] mapNode;
-	private static final int WIDTH = 10;
-	private static final int HEIGHT = 5;
-	private final static Logger logger = LoggerFactory.getLogger(MapHalfGenerator.class);
-	private final static double GRASS_FIELDS = 0.48;
-	private final static double MOUNTAIN_FIELDS = 0.1;
-	private final static double WATER_FIELDS = 0.14;
-	private final static double CASTLE_FIELDS = 0.02;
-	private int totalCastles = (int) Math.round((WIDTH * HEIGHT) * CASTLE_FIELDS);
-	private List<Point> grassTiles = new ArrayList<>(totalCastles);
+	protected MapNode[][] mapHalf;
+	protected FullMap fullMap;
+	protected static final int WIDTH = 10;
+	protected static final int HEIGHT = 5;
+	protected final static double GRASS_FIELDS = 0.48;
+	protected final static double MOUNTAIN_FIELDS = 0.10;
+	protected final static double WATER_FIELDS = 0.14;
+	protected final static double CASTLE_FIELDS = 0.02;
+	protected static final int NON_REACHABLE_FIELDS = 6;
+	protected List<Point> grassTiles = new ArrayList<>(1);
+
+
+	
+	protected final static Logger logger = LoggerFactory.getLogger(MapHalfGenerator.class);
 
 	/**
 	 * Generates the half map, which is sent to the server. Implicitly calls generateMap.
 	 */
-	public MapHalfGenerator() {
+	
+	public MapHalfGenerator(FullMap fullMap) {
 
-		mapNode = new MapNode[WIDTH][HEIGHT];
+		mapHalf = new MapNode[WIDTH][HEIGHT];
+		this.fullMap = fullMap;
+
 
 		logger.info("The CTOR for a MapHalf has been called!");
 
@@ -39,13 +48,28 @@ public class MapHalfGenerator {
 		generateMap();
 
 	};
+	
+	public MapHalfGenerator() {
+
+		mapHalf = new MapNode[WIDTH][HEIGHT];
+		logger.info("The CTOR for a MapHalf has been called!");
+
+		logger.info("Generating map...");
+		generateMap();
+
+	};
+	
 
 	/**
-	 * Main generation algorithm, calls the floodFill method to actually fill the
-	 * tiles with random terrain according to the rules from the game idea
+	 * 
+	 * Generates a generic map, that adheres to the rules of terrain types and placement of terrain. Useful, when you only need to generate the first HalMap.
+	 * 
+	 * Any subclass implementing this method needs to either call {@link #placeCastle} from the super class, or override it themselves.
 	 */
-	private void generateMap() {
-		mapNode = new MapNode[WIDTH][HEIGHT];
+	protected void generateMap() {
+		logger.info("Generating the second map half, need to take care of the border fields");
+		
+		mapHalf = new MapNode[WIDTH][HEIGHT];
 		boolean[][] visited = new boolean[WIDTH][HEIGHT];
 
 		int totalTiles = WIDTH * HEIGHT;
@@ -54,15 +78,23 @@ public class MapHalfGenerator {
 		int waterTiles = (int) (totalTiles * WATER_FIELDS);
 		int otherTiles = totalTiles - mountainTiles - grassTiles - waterTiles;
 
+		MountainPlacer mountainPlacer = new MountainPlacer();
+		mountainPlacer.setHeight(HEIGHT);
+		mountainPlacer.setWidth(WIDTH);
+		mountainPlacer.placeMountains(mountainTiles, visited, mapHalf);
+		
+		mapHalf = mountainPlacer.getMap();
+		visited = mountainPlacer.getVisited();
+		
 		fillTerrain(ETerrain.Water, waterTiles, visited);
-		fillTerrain(ETerrain.Mountain, mountainTiles, visited);
-		fillTerrain(ETerrain.Grass, grassTiles, visited);
+		
+		fillTerrain(ETerrain.Grass, grassTiles, visited);		
+		
 		ETerrain[] remaining = { ETerrain.Grass, ETerrain.Mountain };
 		fillRemaining(remaining, otherTiles, visited); // fill others randomly with grass or mountain and not water,
 														// since water field threshold is reached already
-		placeCastle();
-
 	}
+	
 
 	/**
 	 * Basic flood fill algorithm implementation in pseudo code from Wikipedia
@@ -74,7 +106,6 @@ public class MapHalfGenerator {
 	private void fillTerrain(ETerrain terrain, int count, boolean[][] visited) {
 		Random rand = new Random();
 		int filled = 0;
-		int waterEdgeCount = 0;
 
 		while (filled < count) {
 			int startX = rand.nextInt(WIDTH);
@@ -91,24 +122,20 @@ public class MapHalfGenerator {
 				int x = pos[0];
 				int y = pos[1];
 
-				if (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT || visited[x][y])
-					continue;
-
-				if (terrain == ETerrain.Water && isEdge(x, y) && waterEdgeCount >= 2)
+				if (isOutsideOfMap(x, y) || visited[x][y])
 					continue;
 
 				visited[x][y] = true;
-				if (mapNode[x][y] == null) {
-					mapNode[x][y] = new MapNode(x, y);
+				
+				if (mapHalf[x][y] == null) {
+					mapHalf[x][y] = new MapNode(x, y);
 				}
-				mapNode[x][y].setTerrain(terrain);
+				
+				mapHalf[x][y].setTerrain(terrain);
 				filled++;
 
-				if (terrain == ETerrain.Water && isEdge(x, y)) {
-					waterEdgeCount++;
-				}
 
-				if (mapNode[x][y].getTerrain() == ETerrain.Grass) {
+				if (mapHalf[x][y].getTerrain() == ETerrain.Grass) {
 					grassTiles.add(new Point(x, y));
 				}
 
@@ -138,8 +165,8 @@ public class MapHalfGenerator {
 			for (int y = 0; y < HEIGHT; y++) {
 				if (!visited[x][y]) {
 					ETerrain randomTerrain = terrainTypes[rand.nextInt(terrainTypes.length)];
-					mapNode[x][y] = new MapNode(x, y);
-					mapNode[x][y].setTerrain(randomTerrain);
+					mapHalf[x][y] = new MapNode(x, y);
+					mapHalf[x][y].setTerrain(randomTerrain);
 					visited[x][y] = true;
 					filled++;
 				}
@@ -154,32 +181,18 @@ public class MapHalfGenerator {
 	 * Places castle(s) up to the amount required by the server on random tiles 
 	 * 
 	 */
-	private void placeCastle() {
+	protected void placeCastle() {
 		logger.info("Placing the necessary castles");
-
-		Random rng = new Random();
-
-		Collections.shuffle(grassTiles, rng);
-
-		for (int i = 0; i < totalCastles; i++) {
-			Point nextPoint = grassTiles.get(i);
-			mapNode[nextPoint.x][nextPoint.y].setCastlePos();
-			logger.info("Placed castle at position x: {} and y: {}", nextPoint.x, nextPoint.y);
+		
+		for (Point nextPoint : grassTiles) {
+			if (!isEdge(nextPoint.x, nextPoint.y)) {
+				mapHalf[nextPoint.x][nextPoint.y].setCastlePos();
+				logger.info("Placed castle at position x: {} and y: {}", nextPoint.x, nextPoint.y);
+				break;
+			}
 		}
-	}
-
-	public MapNode[][] getMap() {
-		return mapNode;
-	}
-
-	public static int getWidth() {
-		return WIDTH;
-	}
-
-	public static int getHeight() {
-		return HEIGHT;
-	}
-
+	}	
+	
 	/**
 	 * 
 	 * Checks if a given coordinate is on an edge of the half map, by taking it's minimum and maximum coordinate 
@@ -188,7 +201,24 @@ public class MapHalfGenerator {
 	 * @param y y-Coordinate of the field to be checked
 	 * @return true if it is on an edge, false if not
 	 */
-	private boolean isEdge(int x, int y) {
+	public boolean isEdge(int x, int y) {
 		return x == 0 || y == 0 || x == WIDTH - 1 || y == HEIGHT - 1;
+	}
+	
+	public static boolean isOutsideOfMap(int x, int y) {
+		return (x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT);
+	}
+
+
+	public MapNode[][] getMap() {
+		return mapHalf;
+	}
+
+	public static int getWidth() {
+		return WIDTH;
+	}
+
+	public static int getHeight() {
+		return HEIGHT;
 	}
 }

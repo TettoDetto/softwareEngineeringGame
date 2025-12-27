@@ -16,8 +16,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
-import client.map.MapHalfGenerator;
+import client.map.FirstMapHalfGenerator;
+import client.map.placers.MapNode;
 import messagesbase.UniquePlayerIdentifier;
+import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.GameState;
 
 public class NetworkTest {
@@ -72,7 +74,7 @@ public class NetworkTest {
 
 	@ParameterizedTest
 	@MethodSource("movementDirections")
-	public void currentPosition_sendPlayerMove_returnTrueIfValidMove(boolean answer, String direction) {
+	public void currentPosition_sendPlayerMove_returnTrueIfValidMove(boolean answer, EMove direction) {
 
 		when(dummyNetwork.sendPlayerMove(any())).thenReturn(answer);
 
@@ -86,7 +88,7 @@ public class NetworkTest {
 
 	@Test
 	public void afterMapCreation_sendHalfMap_returnAnswerFromServer() {
-		MapHalfGenerator mapHalf = new MapHalfGenerator();
+		MapNode[][] mapHalf = new FirstMapHalfGenerator().getMap();
 		Mockito.when(dummyNetwork.sendMapHalf(mapHalf)).thenReturn(true);
 
 		assertThat(server.sendMapHalf(mapHalf), is(true));
@@ -96,8 +98,8 @@ public class NetworkTest {
 	}
 
 	private static Stream<Arguments> movementDirections() {
-		return Stream.of(Arguments.of(true, "Up"), Arguments.of(true, "Down"), Arguments.of(true, "Left"),
-				Arguments.of(true, "Right"));
+		return Stream.of(Arguments.of(true, EMove.Up), Arguments.of(true, EMove.Down), Arguments.of(true, EMove.Left),
+				Arguments.of(true, EMove.Right));
 	}
 
 }

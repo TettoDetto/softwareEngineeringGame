@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 import client.map.TerrainMap;
+import client.movement.model.TerrainCost;
+import client.movement.model.ValidateCoordinate;
 
 public class Djikstra {
 	

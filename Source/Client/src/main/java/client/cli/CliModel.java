@@ -1,27 +1,23 @@
-/*package client.cli;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package client.cli;
 
 import client.main.GameResult;
 import client.map.TerrainMap;
-import client.utility.PlayerMoveRequest;
+import client.map.validation.EValidationResults;
+import client.utility.events.EPropertyChangeEventType;
 import client.utility.events.IPropertyChangeListener;
-import client.utility.events.IPropertyChangeObserver;
 import client.utility.events.PropertyChangeSupport;
-import client.utility.events.PropertyType;
-import client.utility.events.PropertyTypes;
+import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.EPlayerGameState;
 import messagesbase.messagesfromserver.GameState;
 
 public class CliModel {
-	private final static Logger logger = LoggerFactory.getLogger(CliModel.class);
 
 	private final PropertyChangeSupport changes;
 	private boolean finished = false;
 	private GameState gameState = null;
 	private boolean sentMap;
 	private TerrainMap terrainMap;
+	private boolean treasure;
 	
 	public CliModel() {
 		this.changes = new PropertyChangeSupport(this);
@@ -35,29 +31,13 @@ public class CliModel {
 		changes.removePropertyChangeListener(listener);
 	}
 
-	public <T> void addPropertyChangeObserver(PropertyType<T> type, IPropertyChangeObserver<T> observer) {
-		changes.addPropertyChangeObserver(type, observer);
-	}
-
-	public <T> void removePropertyChangeObserver(PropertyType<T> type, IPropertyChangeObserver<T> observer) {
-		changes.removePropertyChangeObserver(type, observer);
-	}
-
 	public void updateGameState(GameState gameState) {
 
-		try {
-			GameState newGameState = gameState;
-			GameState oldGameState = this.gameState;
-			this.gameState = newGameState;
+		GameState newGameState = gameState;
+		GameState oldGameState = this.gameState;
+		this.gameState = newGameState;
 
-			if (newGameState != null) {
-
-				changes.firePropertyChange(PropertyTypes.GAME_STATE, oldGameState, newGameState);
-			}
-		} catch (Exception e) {
-			changes.firePropertyChange(PropertyTypes.EXCEPTION, null, e);
-		}
-
+		changes.firePropertyChange(EPropertyChangeEventType.GAME_STATE, oldGameState, newGameState);
 	}
 
 	public GameState getGameState() {
@@ -68,44 +48,61 @@ public class CliModel {
 		boolean newSentMap = value;
 		boolean oldSentMap = this.sentMap;
 		this.sentMap = newSentMap;
-		changes.firePropertyChange(PropertyTypes.MAP_SENT, oldSentMap, newSentMap);
+		changes.firePropertyChange(EPropertyChangeEventType.MAP_SENT_SUCCESSFULLY, oldSentMap, newSentMap);
+	}
+	
+	public void setMapValidationError(EValidationResults eValidationResults) {
+		changes.firePropertyChange(EPropertyChangeEventType.MAP_VALIDATION_ERROR, null, eValidationResults);
 	}
 
 	public void updateTerrainMap(TerrainMap newTerrainMap) {
 		TerrainMap oldTerrainMap = this.terrainMap;
 		this.terrainMap = newTerrainMap;
-		changes.firePropertyChange(PropertyTypes.TERRAIN_MAP, oldTerrainMap, newTerrainMap);
+		changes.firePropertyChange(EPropertyChangeEventType.MAP_UPDATED, oldTerrainMap, newTerrainMap);
 	}
 
 	public TerrainMap getTerrainMap() {
 		return this.terrainMap;
 	}
 
-
-	public void setFinished(boolean hasWon, int loopCount, boolean hasTreasure) {
-		this.finished = true;
-		GameResult result = new GameResult(hasWon, loopCount, hasTreasure);
-		if (hasWon) {
-			logger.info("Client won after capturing the enemy castle");
-		}
-		else {
-			logger.info("Client has lost after castle got caputred");
-		}
-		changes.firePropertyChange(PropertyTypes.GAME_FINISHED, null, result);
-	}
-
 	public boolean getFinished() {
 		return finished;
 	}
 
-	public void setMove(PlayerMoveRequest move) {
-		changes.firePropertyChange(PropertyTypes.MOVE_SENT, null, null);
+	public void setMove(EMove move) {
+		changes.firePropertyChange(EPropertyChangeEventType.MOVE_CALCULATED, null, move);
 	}
 
 	public void setWaiting(boolean b) {
-		changes.firePropertyChange(PropertyTypes.GAME_STATUS, null, EPlayerGameState.MustWait);
+		changes.firePropertyChange(EPropertyChangeEventType.WAITING_FOR_OPPONENT, null, EPlayerGameState.MustWait);
 
 	}
 
+	public void setMapCreation() {
+		changes.firePropertyChange(EPropertyChangeEventType.MAP_CREATION_STARTED, null, "");
+		
+	}
+
+	public void setGameStart() {
+		changes.firePropertyChange(EPropertyChangeEventType.GAME_STARTED, null, "");
+		
+	}
+
+	public void setTreasureCollected() {
+		this.treasure = true;
+		changes.firePropertyChange(EPropertyChangeEventType.TREASURE_COLLECTED, null, "");
+		
+	}
+
+	public void setWon(boolean won, int loopCount, boolean hasTreasure) {
+		this.finished = true;
+		GameResult result = new GameResult(won, loopCount, hasTreasure);
+		changes.firePropertyChange(EPropertyChangeEventType.GAME_WON, null, result);
+	}
+	public void setLost(boolean won, int loopCount, boolean hasTreasure) {
+		this.finished = true;
+		GameResult result = new GameResult(won, loopCount, hasTreasure);
+		changes.firePropertyChange(EPropertyChangeEventType.GAME_LOST, null, result);
+	}
+
 }
-*/

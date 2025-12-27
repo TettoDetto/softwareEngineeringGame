@@ -12,11 +12,10 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import client.map.MapHalfGenerator;
-import client.map.MapNode;
-import client.utility.HalfMapDTO;
-import client.utility.MapNodeDTO;
-import client.utility.PlayerMoveRequest;
+import client.map.placers.MapNode;
+import client.network.data.HalfMapDTO;
+import client.network.data.MapNodeDTO;
+import client.network.data.PlayerMoveRequest;
 import client.utility.exceptions.GameStateEmptyException;
 import client.utility.exceptions.InvalidMapHalfException;
 import client.utility.exceptions.InvalidMoveException;
@@ -130,10 +129,9 @@ public class Network implements INetwork {
 	}
 
 	/*
-	 * TODO: Make PlayerMoveRequest Method, for a POST move that can be serialized
-	 * to XML. Makes a POST request to the server, to send the player Move
+	 * Sends a players move to the server. 
 	 * 
-	 * @param move
+	 * @param move The move to be sent to the server
 	 * 
 	 * @return
 	 */
@@ -158,7 +156,13 @@ public class Network implements INetwork {
 		}
 	}
 
-	public boolean sendMapHalf(MapHalfGenerator mapHalf) {
+	/**
+	 *
+	 *	Sends the generated MapHalf over the network to the server. The method uses a method to transform the HalfMap 
+	 *	into a Data Transfer Object, so that it can be sent
+	 *	@param mapHalf the generated HalfMap the server should receive
+	 */
+	public boolean sendMapHalf(MapNode[][] mapHalf) {
 
 		logger.info("Converting the half map into a DTO");
 		HalfMapDTO halfMapDTO = new HalfMapDTO();
@@ -169,8 +173,8 @@ public class Network implements INetwork {
 		logger.info("Sending Half map...");
 
 		Mono<ResponseEnvelope<Boolean>> webAccess = webClient.method(HttpMethod.POST).uri("/" + gameId + "/halfmaps")
-				// .header("Content-Type", "application/xml")
-				// .header("Accept", "application/xml")
+				.header("Content-Type", "application/xml")
+				.header("Accept", "application/xml")
 				.body(BodyInserters.fromValue(halfMapDTO)).retrieve()
 				.bodyToMono(new ParameterizedTypeReference<ResponseEnvelope<Boolean>>() {
 				});
@@ -188,14 +192,18 @@ public class Network implements INetwork {
 		}
 	}
 
-	private List<MapNodeDTO> convertToMapNodeDTOs(MapHalfGenerator mapHalf) {
+	/**
+	 * Generates a Data Transfer Object from the generated HalfMap, which then can be sent over to the server
+	 * 
+	 * @param mapHalf The generated mapHalf to be converted
+	 * @return A list of mapNodes that are now in the form of a DTO
+	 */
+	private List<MapNodeDTO> convertToMapNodeDTOs(MapNode[][] mapHalf) {
 		List<MapNodeDTO> nodeDTOs = new ArrayList<>();
-		MapNode[][] mapNodes = mapHalf.getMap();
 
-		for (int y = 0; y < mapNodes.length; y++) {
-			for (int x = 0; x < mapNodes[y].length; x++) {
-				MapNode node = mapNodes[y][x];
-				// Convert Terrain enum to string value
+		for (int y = 0; y < mapHalf.length; y++) {
+			for (int x = 0; x < mapHalf[y].length; x++) {
+				MapNode node = mapHalf[y][x];
 				ETerrain terrain = node.getTerrain();
 
 				nodeDTOs.add(new MapNodeDTO(node.getX(), node.getY(), terrain, node.hasCastle()));

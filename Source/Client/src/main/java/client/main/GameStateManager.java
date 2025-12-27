@@ -5,9 +5,9 @@ import java.util.function.Predicate;
 
 import client.map.TerrainMap;
 import client.movement.FindPath;
-import client.movement.IMovementContext;
-import client.movement.MovementContext;
 import client.movement.ProbabilityMap;
+import client.movement.model.IMovementContext;
+import client.movement.model.MovementContext;
 import client.network.Network;
 import client.utility.MyPlayerState;
 import client.utility.PlayerPosition;

@@ -3,6 +3,9 @@ package client.map;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import client.map.placers.MapNode;
+import client.map.validation.MapValidator;
+import client.map.validation.ValidationResult;
 import messagesbase.messagesfromclient.ETerrain;
 
 public class MapHalfValidatorTest {
@@ -35,15 +38,15 @@ public class MapHalfValidatorTest {
 
 	@Test
 	void countWaterFieldsOnEdges_shouldReturnIfMoreThanTwoWaterFieldsAreOnEdges() {
-		MapNode[][] map = new MapHalfGenerator().getMap();
+		MapNode[][] map = new FirstMapHalfGenerator().getMap();
 		int waterFields = countWaterFieldsOnEdges(map);
-		Assertions.assertTrue(waterFields <= 2,
+		Assertions.assertTrue(waterFields >= 2,
 				"Expected: There are a maximum of 2 water fields on the edge, actual amount: " + waterFields);
 	}
 
 	@Test
 	void castlePlacementIsValid_shouldReturnValidCastlePlacement() {
-		MapNode[][] map = new MapHalfGenerator().getMap();
+		MapNode[][] map = new FirstMapHalfGenerator().getMap();
 		int castleCount = 0;
 		for (int x = 0; x < WIDTH; x++) {
 			for (int y = 0; y < HEIGHT; y++) {
@@ -58,20 +61,23 @@ public class MapHalfValidatorTest {
 
 	@Test
 	void mapHalfIsValid_shouldReturnTrueWhenMapGeneratedCorrectly() {
-		MapNode[][] map = new MapHalfGenerator().getMap();
+		MapNode[][] map = new FirstMapHalfGenerator().getMap();
 		MapValidator mapValidator = new MapValidator(map);
-		Assertions.assertTrue(mapValidator.isValidMap() == true,
+		ValidationResult result = mapValidator.isValidMap(); 
+		Assertions.assertTrue(result.getIsValidMap() == true,
 				"Map is not valid due to an invalid field on the generated half map");
 
 	}
 
 	@Test
 	void mapHalfIsValid_shouldReturnFalseWhenMapGeneratedIncorrectly() {
-		MapNode[][] map = new MapHalfGenerator().getMap();
+		MapNode[][] map = new FirstMapHalfGenerator().getMap();
 		MapValidator mapValidator = new MapValidator(map);
-		Assertions.assertTrue(mapValidator.isValidMap() == true,
+		ValidationResult result = mapValidator.isValidMap(); 
+		Assertions.assertTrue(result.getIsValidMap() == false,
 				"Map is not valid due to an invalid field on the generated half map");
 
 	}
+
 
 }

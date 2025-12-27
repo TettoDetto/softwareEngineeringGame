@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import client.map.TerrainMap;
+import client.movement.model.ValidateCoordinate;
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromserver.EFortState;
 import messagesbase.messagesfromserver.ETreasureState;
@@ -30,7 +31,7 @@ public class VisibilityGain {
 	 * @param currentPath The Queue that holds the current path
 	 * @param probMap The probability map that holds the likelihood of the treasure or castle being on any specific field 
 	 */
-	public VisibilityGain(TerrainMap map, Set<Point> discovered, ProbabilityMap probMap) {
+	public VisibilityGain(TerrainMap map, Set<Point> discovered,  ProbabilityMap probMap) {
 		this.map = map;
 		this.discovered = discovered;
 		this.probMap = probMap;

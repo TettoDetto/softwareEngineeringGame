@@ -1,8 +1,9 @@
 package client.network;
 
-import client.map.MapHalfGenerator;
-import client.utility.PlayerMoveRequest;
+import client.map.placers.MapNode;
+import client.network.data.PlayerMoveRequest;
 import messagesbase.UniquePlayerIdentifier;
+import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromserver.GameState;
 
 public class GameServer {
@@ -26,12 +27,12 @@ public class GameServer {
 		return null;
 	}
 
-	public boolean sendPlayerMove(String playerId, String move) {
+	public boolean sendPlayerMove(String playerId, EMove move) {
 		PlayerMoveRequest moveRequest = new PlayerMoveRequest(playerId, move);
 		return network.sendPlayerMove(moveRequest);
 	}
 
-	public boolean sendMapHalf(MapHalfGenerator mapHalf) {
+	public boolean sendMapHalf(MapNode[][] mapHalf) {
 		return network.sendMapHalf(mapHalf);
 	}
 

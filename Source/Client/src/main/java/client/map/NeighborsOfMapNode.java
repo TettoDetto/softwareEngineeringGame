@@ -4,7 +4,8 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
-import client.movement.ValidateCoordinate;
+import client.map.placers.MapNode;
+import client.movement.model.ValidateCoordinate;
 import messagesbase.messagesfromclient.ETerrain;
 
 /**

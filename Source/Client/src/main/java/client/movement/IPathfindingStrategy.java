@@ -1,8 +1,10 @@
 package client.movement;
 
+import client.movement.model.IMovementContext;
+import messagesbase.messagesfromclient.EMove;
 
 public interface IPathfindingStrategy {
 
-	public String pathfinding(IMovementContext context, FindPath findPath);
+	public EMove pathfinding(IMovementContext context, FindPath findPath);
 
 }

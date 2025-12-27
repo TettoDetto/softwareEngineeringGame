@@ -20,7 +20,7 @@ public class GameResult {
 		this.hasTreasure = hasTreasure;
 	}
 
-	public boolean isWon() {
+	public boolean hasWon() {
 		return hasWon;
 	}
 

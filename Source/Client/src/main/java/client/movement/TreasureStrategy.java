@@ -3,7 +3,9 @@ package client.movement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import client.movement.model.IMovementContext;
 import client.utility.IPlayerPosition;
+import messagesbase.messagesfromclient.EMove;
 
 public class TreasureStrategy implements IPathfindingStrategy {
 	private final static Logger logger = LoggerFactory.getLogger(TreasureStrategy.class);
@@ -17,7 +19,7 @@ public class TreasureStrategy implements IPathfindingStrategy {
 	 * @return returns the direction of the next move
 	 */
 	@Override
-	public String pathfinding(IMovementContext context, FindPath findPath) {
+	public EMove pathfinding(IMovementContext context, FindPath findPath) {
 		logger.info("Using the treasure strategy to find the next move...");
 		
 		IPlayerPosition playerPos = context.getPlayerPosition();

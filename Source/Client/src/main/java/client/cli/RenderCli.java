@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import client.map.TerrainMap;
-import client.utility.MyPlayerState;
 import messagesbase.messagesfromserver.EFortState;
 import messagesbase.messagesfromserver.EPlayerPositionState;
 import messagesbase.messagesfromserver.ETreasureState;

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import client.map.placers.MapNode;
 import messagesbase.messagesfromclient.ETerrain;
 
 public class MapHalfGeneratorTest {
@@ -39,8 +40,8 @@ public class MapHalfGeneratorTest {
 
 	@Test
 	void sizeOfMapIsTheSame_shouldReturnDimensionOfMap() {
-		new MapHalfGenerator();
-		MapNode[][] map = new MapHalfGenerator().getMap();
+		new FirstMapHalfGenerator();
+		MapNode[][] map = new FirstMapHalfGenerator().getMap();
 		Assertions.assertEquals(WIDTH, map.length, "Width of Map incorrect");
 		Assertions.assertEquals(HEIGHT, map[0].length, "Height of Map incorrect");
 		Assertions.assertEquals(TOTAL, WIDTH * HEIGHT, "Total number of fields of Map incorrect");
@@ -48,8 +49,8 @@ public class MapHalfGeneratorTest {
 
 	@RepeatedTest(10)
 	void numberOfTerrainTypes_shouldReturnCorrectAmountOfTerrainTypes() {
-		new MapHalfGenerator();
-		MapNode[][] map = new MapHalfGenerator().getMap();
+		new FirstMapHalfGenerator();
+		MapNode[][] map = new FirstMapHalfGenerator().getMap();
 		Map<ETerrain, Integer> count = countFields(map);
 
 		Assertions.assertTrue(count.get(ETerrain.Water) >= amountOfWater,

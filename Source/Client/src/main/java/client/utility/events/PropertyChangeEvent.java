@@ -7,9 +7,9 @@ public class PropertyChangeEvent<T> {
 	private final Object source;
 	private final T oldValue;
 	private final T newValue;
-	private final PropertyType<T> type;
+	private final EPropertyChangeEventType type;
 
-	public PropertyChangeEvent(Object source, T oldValue, T newValue, PropertyType<T> propType) {
+	public PropertyChangeEvent(Object source, T oldValue, T newValue, EPropertyChangeEventType propType) {
 		this.type = propType;
 		this.newValue = newValue;
 		this.oldValue = oldValue;
@@ -28,7 +28,7 @@ public class PropertyChangeEvent<T> {
 		return newValue;
 	}
 
-	public PropertyType<T> getType() {
+	public EPropertyChangeEventType getType() {
 		return type;
 	}
 

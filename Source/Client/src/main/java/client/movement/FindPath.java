@@ -11,7 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import client.map.TerrainMap;
+import client.movement.model.Direction;
+import client.movement.model.IMovementContext;
+import client.movement.model.MapLayout;
+import client.movement.model.ValidateCoordinate;
 import client.utility.IPlayerPosition;
+import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromserver.FullMapNode;
 
@@ -65,10 +70,10 @@ public class FindPath {
      * @param position Current position of the player
      * @return Returns the next move 
      */
-    public String nextMove(boolean hasTreasure, IPlayerPosition position) {
+    public EMove nextMove(boolean hasTreasure, IPlayerPosition position) {
         this.map = movementContext.getTerrainMap();
         this.visibilityGain = new VisibilityGain(map, discovered, probMap);
-        this.targetSearch = new TargetSearch(map, mapLayout, visited, visibilityGain, probMap);
+        this.targetSearch = new TargetSearch(map, mapLayout, visited, discovered, visibilityGain, probMap);
 
         Point here = position.playerLocation();
         logger.info("Determining next move from ({}, {})", here.x, here.y);
@@ -79,14 +84,14 @@ public class FindPath {
             probMap.ruleOut(here);
         }
         
+        if (!currentPath.isEmpty() && currentPath.peekFirst().equals(here)) {
+        	currentPath.removeFirst();
+        }
         
         Point immediateObjective = visibilityGain.checkMountainVisibility(here, hasTreasure);
         if (immediateObjective != null) {
             logger.info("Found objective from a mountain at ({}, {}), creating path", immediateObjective.x, immediateObjective.y);
             currentPath = djikstra.djikstraPath(here, immediateObjective, map);
-            Point next = currentPath.removeFirst();
-            logger.info("Moving onto point ({}, {}) with terrain: {}",next.x, next.y, map.getMapNode(next.x, next.y).getTerrain());
-            return Direction.getDirection(here, next);
         }
         
         
@@ -104,16 +109,14 @@ public class FindPath {
         }
         
         
-        if (currentPath.isEmpty() || currentPath.peekFirst().equals(here)) {
-            if (!currentPath.isEmpty()) {
-                currentPath.removeFirst();
-            }
+        if (currentPath.isEmpty()) {
+            logger.info("Planning new path");
             planNewPath(here, hasTreasure);
         }
         
        
         if (!currentPath.isEmpty()) {
-            Point next = currentPath.removeFirst();
+            Point next = currentPath.peekFirst();
             if (ValidateCoordinate.checkCoordinate(next.x, next.y, map)) {
             	return Direction.getDirection(here, next);
             }
@@ -135,7 +138,6 @@ public class FindPath {
         logger.info("Planning new path from ({}, {})", start.x, start.y);
         
         Point target = targetSearch.findBestTarget(start, hasTreasure);
-        
         if (target != null && !target.equals(start)) {
             logger.info("Target found at ({}, {})", target.x, target.y);
             currentPath = djikstra.djikstraPath(start, target, map);
@@ -177,7 +179,7 @@ public class FindPath {
      * @param here Current point
      * @return Returns a valid move in a random direction
      */
-    private String fallbackMove(Point here) {
+    private EMove fallbackMove(Point here) {
         for (Point neighbor : getNeighbors(here)) {
             if (ValidateCoordinate.checkCoordinate(neighbor.x, neighbor.y, map)) {
                 return Direction.getDirection(here, neighbor);
@@ -193,37 +195,30 @@ public class FindPath {
      * @param newMap
      */
     public void updateTerrainMap(TerrainMap newMap) {
+    	
         if (newMap == null) {
             return;
         }
         
+        boolean renewPath = false;
         this.map = newMap;
         
-        for (Point visitedPos : visited) {
-            FullMapNode node = map.getMapNode(visitedPos.x, visitedPos.y);
-            
-            if (node != null && node.getTerrain() == ETerrain.Mountain) {
-                for (int dx = -1; dx <= 1; dx++) {
-                    for (int dy = -1; dy <= 1; dy++) {
-                        if (dx == 0 && dy == 0) continue;
-                        
-                        int nx = visitedPos.x + dx;
-                        int ny = visitedPos.y + dy;
-                        
-                        if (ValidateCoordinate.checkCoordinate(nx, ny, map)) {
-                            Point neighbor = new Point(nx, ny);
-                            FullMapNode neighborNode = map.getMapNode(nx, ny);
-                            
-                            if (neighborNode != null && neighborNode.getTerrain() != ETerrain.Water) {
-                                discovered.add(neighbor);
-                            }
-                        }
-                    }
-                }
-            }
+        for (Point p : currentPath) {
+        	FullMapNode node = map.getMapNode(p.x, p.y);
+        	
+        	if (node != null && node.getTerrain() == ETerrain.Water) {
+        		renewPath = true;
+        		break;
+        	}
         }
-        
-        currentPath.clear();
+        if (renewPath) {
+        	logger.info("Had to renew path, because it was blocked");
+        	currentPath.clear();
+        }
     }
+
+	public void clearCurrentPath() {
+		currentPath.clear();	
+	}
 
 }

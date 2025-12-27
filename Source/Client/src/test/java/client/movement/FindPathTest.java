@@ -12,12 +12,14 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import client.map.TerrainMap;
+import client.movement.model.IMovementContext;
+import client.movement.model.MovementContext;
 import client.utility.IPlayerPosition;
+import messagesbase.messagesfromclient.EMove;
 import messagesbase.messagesfromclient.ETerrain;
 import messagesbase.messagesfromserver.EFortState;
 import messagesbase.messagesfromserver.EPlayerPositionState;
@@ -146,7 +148,7 @@ public class FindPathTest {
 		path.nextMove(false, location);
 
 		for (int i = 0; i < 3; i++) {
-			String dir = path.nextMove(false, location);
+			EMove dir = path.nextMove(false, location);
 			logger.info("Player moved in direction: " + dir);
 			movePlayer(dir, location);
 			logger.info("Player on terrain: " + movementContext.getTerrainMap().getMapNode(location.playerLocation().x, location.playerLocation().y).getTerrain());
@@ -173,7 +175,7 @@ public class FindPathTest {
 		path.nextMove(false, location);
 
 		for (int i = 0; i < 10; i++) {
-			String dir = path.nextMove(false, location);
+			EMove dir = path.nextMove(false, location);
 			logger.info("Player moved in direction: " + dir);
 			movePlayer(dir, location);
 			assertThat(location.playerLocation().x, lessThanOrEqualTo(4));
@@ -201,7 +203,7 @@ public class FindPathTest {
 		FindPath path = new FindPath(movementContext);
 
 		for (int i = 0; i < 50; i++) {
-			String dir = path.nextMove(false, location);
+			EMove dir = path.nextMove(false, location);
 			movePlayer(dir, location);
 			assertThat(location.playerLocation().x, lessThanOrEqualTo(4));
 
@@ -241,19 +243,19 @@ public class FindPathTest {
 
 	}
 	
-	private static void movePlayer(String dir, IPlayerPosition position) {
+	private static void movePlayer(EMove dir, IPlayerPosition position) {
 		Point pos = position.playerLocation();
 		switch (dir) {
-		case "Up":
+		case EMove.Up:
 			position.update(pos.x, pos.y - 1);
 			break;
-		case "Down":
+		case EMove.Down:
 			position.update(pos.x, pos.y + 1);
 			break;
-		case "Left":
+		case EMove.Left:
 			position.update(pos.x - 1, pos.y);
 			break;
-		case "Right":
+		case EMove.Right:
 			position.update(pos.x + 1, pos.y);
 			break;
 		}

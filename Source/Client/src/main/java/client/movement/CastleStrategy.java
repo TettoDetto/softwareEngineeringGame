@@ -3,7 +3,9 @@ package client.movement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import client.movement.model.IMovementContext;
 import client.utility.IPlayerPosition;
+import messagesbase.messagesfromclient.EMove;
 
 public class CastleStrategy implements IPathfindingStrategy {
 	
@@ -15,7 +17,7 @@ public class CastleStrategy implements IPathfindingStrategy {
 	 * 
 	 */
 	@Override
-	public String pathfinding(IMovementContext context, FindPath findPath) {
+	public EMove pathfinding(IMovementContext context, FindPath findPath) {
 		
 		
 		logger.info("Finding the enemy castle!");
