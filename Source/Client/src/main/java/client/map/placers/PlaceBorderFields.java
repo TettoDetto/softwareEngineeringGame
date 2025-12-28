@@ -23,29 +23,11 @@ public class PlaceBorderFields {
 		this.mapNode = mapNode;
 	}
 	
-	public void checkBorderRules(boolean excludeBorder) {
-	
-		if (excludeBorder) {
-			if (!connectingBorder.contains(EBorder.Left)) {
-				checkBorder(leftBorder());
-			}
-			if (!connectingBorder.contains(EBorder.Right)) {
-				checkBorder(rightBorder());
-			}
-			if (!connectingBorder.contains(EBorder.Top)) {
-				checkBorder(topBorder());
-			}
-			if (!connectingBorder.contains(EBorder.Bottom)) {
-				checkBorder(bottomBorder());
-			}
-		}
-		else {
-			
-			checkBorder(leftBorder());
-			checkBorder(rightBorder());
-			checkBorder(topBorder());
-			checkBorder(bottomBorder());
-		}
+	public void checkBorderRules() {			
+		checkBorder(leftBorder());
+		checkBorder(rightBorder());
+		checkBorder(topBorder());
+		checkBorder(bottomBorder());
 		
 	}
 	
